@@ -6,7 +6,9 @@ Flutter socket.io-client using native platform.
 
 Actually, this plugin work only for android 
 
-In AndroidManifest.xml , donc froget to add **Internet permission** and  **android:usesCleartextTraffic="true"** in application tag
+In AndroidManifest.xml , so don't forget to add **Internet permission** and  **android:usesCleartextTraffic="true"** in application tag
+
+This work for socketio version 3.x or 4.x
 
 ````dart
 import 'package:flutter/material.dart';
