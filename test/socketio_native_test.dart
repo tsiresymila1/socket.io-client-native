@@ -48,7 +48,6 @@ void main() {
     SocketIO socketIo = IO.create("https://realtimeio.sutchapp.com");
     MockSocketIoNativePlatform fakePlatform = MockSocketIoNativePlatform();
     SocketIoNativePlatform.instance = fakePlatform;
-
-    // expect(await socketIo.init(), '42');
+    expect(await socketIo.connect(), true);
   });
 }

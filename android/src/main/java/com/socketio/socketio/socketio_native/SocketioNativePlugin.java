@@ -34,7 +34,7 @@ import io.socket.client.IO;
 import okhttp3.OkHttpClient;
 
 /**
- * SocketioNativePlugin
+ * SocketIONativePlugin
  */
 public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -69,7 +69,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
         Log.e("METHOD", call.method);
         Object arg = call.arguments();
         Log.e("ARGUMENT", arg == null ? "No args" : arg.toString());
-        switch (call.method) {
+        switch(call.method) {
 //      Object arg = call.arguments();
 //      Log.e("ARGUMENT",  arg == null ? "No args" : arg.toString());
             // Options
@@ -281,9 +281,9 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
         op.webSocketFactory = okHttpClient;
 //        }
         socketIo = IO.socket(socketUri, op);
-//        if (autoConnect) {
-//            socketIo.connect();
-//        }
+        if (autoConnect) {
+            socketIo.connect();
+        }
     }
 
     @Override

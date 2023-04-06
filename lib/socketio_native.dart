@@ -2,11 +2,16 @@ import 'package:logger/logger.dart';
 import 'package:socketio_native/socketio_native_event_channel.dart';
 import 'socketio_native_platform_interface.dart';
 
+// SocketIo transport
 enum SocketIoTransport {
   websocket,
   polling,
 }
 
+/*
+
+Initialized Option
+ */
 class Option {
   final Map<String, dynamic> _options = {
     "Option[setForceNew]": false,
@@ -93,6 +98,7 @@ class Option {
     _options["Option[setAuth]"] = auth;
   }
 
+  // To Map data
   Map<String, dynamic> build() {
     return _options;
   }
@@ -104,6 +110,7 @@ class IO {
   }
 }
 
+// SocketIo class
 class SocketIO {
   final String uri;
   late final Option option;
@@ -127,8 +134,6 @@ class SocketIO {
       await SocketIoNativePlatform.instance.setOption(opt.key, opt.value);
     }
     await SocketIoNativePlatform.instance.callSocketIoMethod("SocketIO[init]");
-    // await SocketIoNativePlatform.instance
-    //     .callSocketIoMethod("SocketIO[connect]");
   }
 
   reconnect() async {
@@ -136,12 +141,12 @@ class SocketIO {
         .callSocketIoMethod("SocketIO[connect]");
   }
   connect() async {
-    await SocketIoNativePlatform.instance
+    return await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[connect]");
   }
 
   disconnect() async {
-    await SocketIoNativePlatform.instance
+    return await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[disconnect]");
   }
 

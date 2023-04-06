@@ -29,10 +29,10 @@ abstract class SocketIoNativePlatform extends PlatformInterface {
   Future<void> setUri(String uri){
     throw UnimplementedError('setUri() has not been implemented.');
   }
-  Future<void> setOption(String event,dynamic data){
+  Future<void> setOption(String method,dynamic data){
     throw UnimplementedError('setOption() has not been implemented.');
   }
-  Future<void> callSocketIoMethod(String event){
+  Future<void> callSocketIoMethod(String method){
     throw UnimplementedError('setOption() has not been implemented.');
   }
   Future<dynamic> callSocketIoMethodWithCallback(String method, dynamic data, Map<String, dynamic> ? other) {

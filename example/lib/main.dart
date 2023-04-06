@@ -33,7 +33,6 @@ class _MyAppState extends State<MyApp> {
 
       // option.setAuth({"api_key" : "20awCHxcod5NJ6Q8UFPuL7JjUHEdgm6BCT0oyZoo8Dl"});
       socketIO = IO.create("http://192.168.1.183:3000");
-
       await socketIO.init();
       socketIO.onConnect((p0) {
         debugPrint("Connected>>>>");
@@ -52,7 +51,7 @@ class _MyAppState extends State<MyApp> {
           log.w({"MessageACK": ok});
         });
       });
-      await socketIO.connect();
+      // await socketIO.connect();
     } catch (e) {
       debugPrint(e.toString());
     }
