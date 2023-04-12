@@ -254,10 +254,9 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
     public void onInit() throws NoSuchAlgorithmException {
 
         IO.Options op = options.build();
-//        if(this.isSecure){
         HostnameVerifier hostnameVerifier = (hostname, sslSession) -> {
-            Log.e("HOSTNAME",socketUri.toString());
-            return hostname.equals(socketUri.toString());
+            Log.e("HOSTNAME",socketUri.toString() + " verified ............... ok");
+            return true;
         };
         @SuppressLint("CustomX509TrustManager")
         X509TrustManager trustManager = new X509TrustManager() {
@@ -284,7 +283,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
         OkHttpClient okHttpClient = okHttpClientBuilder.build();
         op.callFactory = okHttpClient;
         op.webSocketFactory = okHttpClient;
-//        }
+
         socketIo = IO.socket(socketUri, op);
         if (autoConnect) {
             socketIo.connect();

@@ -27,15 +27,15 @@ class _MyAppState extends State<MyApp> {
   initSocket() async {
     try {
       Option option = Option();
-      // option.setTransport([SocketIoTransport.polling, SocketIoTransport.websocket]);
-      // option.setSecure(true);
-      // option.setTimeout(60000);
-      // option.setAuth({"api_key" : "20awCHxcod5NJ6Q8UFPuL7JjUHEdgm6BCT0oyZoo8Dl"});
-      socketIO = await IO.create("http://192.168.88.6:3000", option: option);
+      option.setTransport([SocketIoTransport.polling,SocketIoTransport.websocket]);
+      option.setSecure(true);
+      option.setTimeout(60000);
+      option.setAuth({"api_key" : "4Mz8zGuOPFNOi95QMhjjZ85XsQIZzXBQ5VLJY6VDuS26"});
+      socketIO = await IO.create("https://realtimeio.sutchapp.com", option: option);
       socketIO.onConnect((p0) {
         debugPrint("Connected>>>>");
         log.w({"CONNECTED": p0});
-        socketIO.emit("message", "Hello");
+        socketIO.emit("message", {"data": "Hello"});
       });
       socketIO.onDisconnect((p0) => {
         log.w({"DISCONNECT": p0})

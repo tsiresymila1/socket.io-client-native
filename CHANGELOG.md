@@ -21,3 +21,11 @@
 ## 0.0.2
 
 * Refactoring
+
+## 0.0.2+1
+
+* https working
+
+## 0.0.2+2
+
+* update readme

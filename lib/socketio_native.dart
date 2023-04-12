@@ -99,7 +99,7 @@ class Option {
     _options["Option[setExtraHeaders]"] = extras;
   }
 
-  setAuth(Map<String, String> auth) {
+  setAuth(Map<String, dynamic> auth) {
     _options["Option[setAuth]"] = auth;
   }
 
@@ -303,8 +303,9 @@ class SocketIO {
         log.e({"ERROR": error});
       }, onDone: () {
         log.w("DONNE");
-      });
+      },cancelOnError: true);
       channels[event] = stream;
+
     });
   }
 }

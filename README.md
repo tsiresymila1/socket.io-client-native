@@ -51,8 +51,7 @@ class _MyAppState extends State<MyApp> {
       // option.setTimeout(60000);
       // option.setAuth({"api_key" : "20awCHxcod5NJ6Q8UFPuL7JjUHEdgm6BCT0oyZoo8Dl"});
       socketIO = await IO.create("http://192.168.1.183:3000", option: option);
-
-      await socketIO.init();
+      
       socketIO.onConnect((p0) {
         debugPrint("Connected>>>>");
         log.w({"CONNECTED": p0});
