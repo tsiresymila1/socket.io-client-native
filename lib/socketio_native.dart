@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:logger/logger.dart';
 import 'package:socketio_native/socketio_native_event_channel.dart';
 import 'socketio_native_platform_interface.dart';
@@ -26,7 +28,10 @@ class Option {
     "Option[setReconnectionDelayMax]": 5000,
     "Option[setRandomizationFactor]": 0.5,
     "Option[setTimeout]": 20000,
-    "Option[setTransport]": [SocketIoTransport.polling.name,SocketIoTransport.websocket.name]
+    "Option[setTransport]": [
+      SocketIoTransport.polling.name,
+      SocketIoTransport.websocket.name
+    ]
   };
 
   setForceNew(bool isForceNew) {
@@ -105,8 +110,10 @@ class Option {
 }
 
 class IO {
-  static create(String uri, {Option? option}) {
-    return SocketIO(uri: uri, option: option);
+  static Future<SocketIO> create(String uri, {Option? option}) async {
+    SocketIO io =  SocketIO(uri: uri, option: option);
+    await io.init();
+    return io;
   }
 }
 
@@ -115,7 +122,11 @@ class SocketIO {
   final String uri;
   late final Option option;
   late Logger log;
-  Map<String, EventChannelSocketIoNative> channels = {};
+  bool? connected;
+  String? id;
+  bool active = false;
+
+  Map<String, StreamSubscription<dynamic>> channels = {};
 
   SocketIO({required this.uri, Option? option}) {
     this.option = option ?? Option();
@@ -127,6 +138,7 @@ class SocketIO {
     ));
   }
 
+  // init socket
   init() async {
     channels = {};
     await SocketIoNativePlatform.instance.setUri(uri);
@@ -136,36 +148,46 @@ class SocketIO {
     await SocketIoNativePlatform.instance.callSocketIoMethod("SocketIO[init]");
   }
 
+  // reconnect socket manually
   reconnect() async {
     await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[connect]");
   }
+
+  // connect from socket manually
   connect() async {
     return await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[connect]");
   }
-
+  // disconnect from socket
   disconnect() async {
     return await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[disconnect]");
   }
-
+  // send data
   send(dynamic data) async {
     await SocketIoNativePlatform.instance
         .callSocketIoMethodWithCallback("SocketIO[send]", [data], null);
   }
 
+  // emit data
   emit(String event, dynamic data, {Function(dynamic)? ack}) async {
     SocketIoNativePlatform.instance.callSocketIoMethodWithCallback(
         "SocketIO[emit]", [data], {"event": event}).then((value) {
       if (ack != null) {
-        ack.call(value);
+        try{
+          var data = jsonDecode(value.toString());
+          ack.call(data);
+        }catch(e){
+          ack.call(value);
+        }
       }
     }).onError((error, stackTrace) {
       log.e({"ERROR": error});
     });
   }
 
+  // emit with timeout
   emitWithTimeout(String event, dynamic data, int timeout,
       {Function(dynamic)? ack}) async {
     try {
@@ -182,36 +204,54 @@ class SocketIO {
     }
   }
 
+  // clear event listener
   off(String event) async {
     await SocketIoNativePlatform.instance
         .callSocketIoMethodWithCallback("SocketIO[off]", event, null);
   }
 
+  // clear all event listener
   offAny() async {
     await SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[offAll]");
   }
 
+  // listen on event
   on(String event, Function(dynamic) callback) {
-    _createListener("SocketIO[on]", event,callback);
+    _createListener("SocketIO[on]", event, callback);
   }
 
+  // listen single
   once(String event, Function(dynamic) callback) {
-    _createListener("SocketIO[once]", event,callback);
+    _createListener("SocketIO[once]", event, callback);
   }
 
+  // listen on connected
   onConnect(Function(dynamic) callback) {
-    _createListener("SocketIO[onConnect]", "connect",callback);
+    _createListener("SocketIO[onConnect]", "connect", (data) {
+      connected = data["connected"] ?? false;
+      id = data["id"];
+      active = data["active"];
+      callback(this);
+    });
   }
 
+  // listen error from socket
   onError(Function(dynamic) callback) {
-    _createListener("SocketIO[onError]", "connect_error",callback);
+    _createListener("SocketIO[onError]", "connect_error", callback);
   }
 
+  // listen when socket disconnected
   onDisconnect(Function(dynamic) callback) {
-    _createListener("SocketIO[onDisconnect]", "disconnect",callback);
+    _createListener("SocketIO[onDisconnect]", "disconnect", (data) {
+      connected = data["connected"];
+      id = data["id"];
+      active = data["active"];
+      callback(this);
+    });
   }
 
+  // listen for any events
   onAny(Function(dynamic) callback) {
     SocketIoNativePlatform.instance
         .callSocketIoMethod("SocketIO[onAny]")
@@ -220,7 +260,12 @@ class SocketIO {
           .eventChannel
           .receiveBroadcastStream()
           .listen((data) {
-        callback(data);
+        try{
+          var value = jsonDecode(data);
+          callback(value);
+        }catch(e){
+          callback(data);
+        }
       }, onError: (error) {
         log.e({"ERROR": error});
       }, onDone: () {
@@ -229,22 +274,37 @@ class SocketIO {
     });
   }
 
-  _createListener(String method, String event,Function(dynamic) callback) {
-    if (channels.keys.contains("event")) {
-      return;
+  // close socket
+  close() {
+    disconnect();
+    for (var ch in channels.values) {
+      ch.cancel();
+    }
+  }
+
+  // private create listener
+  _createListener(String method, String event, Function(dynamic) callback) {
+    if (channels.keys.contains(event)) {
+      channels[event]?.cancel();
     }
     SocketIoNativePlatform.instance
         .callSocketIoMethodWithCallback(method, event, null)
         .then((value) {
       EventChannelSocketIoNative chl = EventChannelSocketIoNative(event);
-      channels[event] = chl;
-      chl.eventChannel.receiveBroadcastStream().listen((data) {
-        callback(data);
+      StreamSubscription<dynamic> stream =
+          chl.eventChannel.receiveBroadcastStream().listen((data) {
+            try{
+              var value = jsonDecode(data);
+              callback(value);
+            }catch(e){
+              callback(data);
+            }
       }, onError: (error) {
         log.e({"ERROR": error});
       }, onDone: () {
         log.w("DONNE");
       });
+      channels[event] = stream;
     });
   }
 }

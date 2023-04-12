@@ -4,11 +4,17 @@ Flutter socket.io-client using native platform.
 
 ## Getting Started
 
-Actually, this plugin work only for android 
+To use this plugin, add socketio_native as a dependency in your pubspec.yaml file.
 
-In AndroidManifest.xml , so don't forget to add **Internet permission** and  **android:usesCleartextTraffic="true"** in application tag
+## Android
 
-This work for socketio version 3.x or 4.x
+Add the internet permissions to the AndroidManifest.xml.
+
+Add **android:usesCleartextTraffic="true"** in application tag inside AndroidManifest.xml.
+
+## iOS
+
+iOS is currently not supported.
 
 ````dart
 import 'package:flutter/material.dart';
@@ -39,12 +45,12 @@ class _MyAppState extends State<MyApp> {
 
   initSocket() async {
     try {
-      // Option option = Option();
+      Option option = Option();
       // option.setTransport([SocketIoTransport.polling, SocketIoTransport.websocket]);
       // option.setSecure(true);
       // option.setTimeout(60000);
       // option.setAuth({"api_key" : "20awCHxcod5NJ6Q8UFPuL7JjUHEdgm6BCT0oyZoo8Dl"});
-      socketIO = IO.create("http://192.168.1.183:3000");
+      socketIO = await IO.create("http://192.168.1.183:3000", option: option);
 
       await socketIO.init();
       socketIO.onConnect((p0) {
@@ -52,19 +58,20 @@ class _MyAppState extends State<MyApp> {
         log.w({"CONNECTED": p0});
         socketIO.emit("message", "Hello");
       });
-      socketIO.onDisconnect((p0) => {
-            log.w({"DISCONNECT": p0})
-          });
-      socketIO.onError((p0) => {
-            log.e({"ERROR": p0})
-          });
+      socketIO.onDisconnect((p0) =>
+      {
+        log.w({"DISCONNECT": p0})
+      });
+      socketIO.onError((p0) =>
+      {
+        log.e({"ERROR": p0})
+      });
       socketIO.on("message", (p0) {
         log.w({"Message": p0});
         socketIO.emit("message_ack", "Ok", ack: (ok) {
           log.w({"MessageACK": ok});
         });
       });
-      // await socketIO.connect();
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -92,9 +99,11 @@ class _MyAppState extends State<MyApp> {
 }
 
 ````
-## Stay in touch 
 
-[Tsiresy Mila](https://tsiresymila.sucthapp.com) 
+## Maintainer
 
-I search contributors to implements IOS version and for testing,
+[Tsiresy Mila](https://tsiresymila.sucthapp.com)
+
+If you experience any problems with this package, please create an issue on Github. Pull requests
+are also very welcome.
 

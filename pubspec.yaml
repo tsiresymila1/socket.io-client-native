@@ -1,6 +1,6 @@
 name: socketio_native
 description: Native socket.io-client flutter package.
-version: 0.0.1+4
+version: 0.0.2
 homepage: https://github.com/tsiresymila1/socket.io-client-native
 
 environment:

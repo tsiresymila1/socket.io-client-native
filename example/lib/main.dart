@@ -26,25 +26,23 @@ class _MyAppState extends State<MyApp> {
 
   initSocket() async {
     try {
-      // Option option = Option();
+      Option option = Option();
       // option.setTransport([SocketIoTransport.polling, SocketIoTransport.websocket]);
       // option.setSecure(true);
       // option.setTimeout(60000);
-
       // option.setAuth({"api_key" : "20awCHxcod5NJ6Q8UFPuL7JjUHEdgm6BCT0oyZoo8Dl"});
-      socketIO = IO.create("http://192.168.1.183:3000");
-      await socketIO.init();
+      socketIO = await IO.create("http://192.168.88.6:3000", option: option);
       socketIO.onConnect((p0) {
         debugPrint("Connected>>>>");
         log.w({"CONNECTED": p0});
         socketIO.emit("message", "Hello");
       });
       socketIO.onDisconnect((p0) => {
-            log.w({"DISCONNECT": p0})
-          });
+        log.w({"DISCONNECT": p0})
+      });
       socketIO.onError((p0) => {
-            log.e({"ERROR": p0})
-          });
+        log.e({"ERROR": p0})
+      });
       socketIO.on("message", (p0) {
         log.w({"Message": p0});
         socketIO.emit("message_ack", "Ok", ack: (ok) {
@@ -53,8 +51,14 @@ class _MyAppState extends State<MyApp> {
       });
       // await socketIO.connect();
     } catch (e) {
-      debugPrint(e.toString());
+      log.e(e.toString());
     }
+  }
+
+  @override
+  void dispose() {
+    socketIO.close();
+    super.dispose();
   }
 
   @override

@@ -18,12 +18,13 @@ class MethodChannelSocketIoNative extends SocketIoNativePlatform {
 
   @override
   Future<dynamic> setUri(String uri) async {
-    return await methodChannel.invokeMethod<dynamic>("SocketIO[setUri]", {"data" : uri});
+    return await methodChannel
+        .invokeMethod<dynamic>("SocketIO[setUri]", {"data": uri});
   }
 
   @override
   Future<dynamic> setOption(String method, data) async {
-    return await methodChannel.invokeMethod<dynamic>(method, {"data" : data});
+    return await methodChannel.invokeMethod<dynamic>(method, {"data": data});
   }
 
   @override
@@ -32,7 +33,9 @@ class MethodChannelSocketIoNative extends SocketIoNativePlatform {
   }
 
   @override
-  Future<dynamic> callSocketIoMethodWithCallback(String method, dynamic data, Map<String, dynamic> ? other) async {
-    return await methodChannel.invokeMethod<dynamic>(method, {"data" : data, ...(other ?? {})});
+  Future<dynamic> callSocketIoMethodWithCallback(
+      String method, dynamic data, Map<String, dynamic>? other) async {
+    return await methodChannel
+        .invokeMethod<dynamic>(method, {"data": data, ...(other ?? {})});
   }
 }

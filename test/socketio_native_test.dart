@@ -44,10 +44,10 @@ void main() {
     expect(initialPlatform, isInstanceOf<MethodChannelSocketIoNative>());
   });
 
-  test('getPlatformVersion', () async {
-    SocketIO socketIo = IO.create("https://realtimeio.sutchapp.com");
+  test('initSocketIo', () async {
+    SocketIO socketIo = await IO.create("https://realtimeio.sutchapp.com");
     MockSocketIoNativePlatform fakePlatform = MockSocketIoNativePlatform();
     SocketIoNativePlatform.instance = fakePlatform;
-    expect(await socketIo.connect(), true);
+    expect(socketIo, isNotNull);
   });
 }

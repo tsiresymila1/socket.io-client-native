@@ -17,3 +17,7 @@
 ## 0.0.1+4
 
 * Activate autoConnect
+
+## 0.0.2
+
+* Refactoring

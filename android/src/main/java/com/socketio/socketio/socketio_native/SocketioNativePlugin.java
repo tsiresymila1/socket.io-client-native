@@ -1,6 +1,7 @@
 package com.socketio.socketio.socketio_native;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -22,6 +23,8 @@ import javax.net.ssl.X509TrustManager;
 
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -36,7 +39,7 @@ import okhttp3.OkHttpClient;
 /**
  * SocketIONativePlugin
  */
-public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
+public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -46,6 +49,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
 
     Socket socketIo;
     URI socketUri;
+    private Context context;
     SocketOptionBuilder options = IO.Options.builder();
     OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
     SSLContext sslContext;
@@ -57,8 +61,9 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
 
 
     @Override
-    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding){
         this.flutterPluginBinding = flutterPluginBinding;
+        this.context = flutterPluginBinding.getApplicationContext();
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "socketio_native");
         channel.setMethodCallHandler(this);
     }
@@ -426,5 +431,33 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler {
             }
         });
 
+    }
+
+    @Override
+    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        Log.e("ATTACHED", "onAttachedToActivity");
+    }
+
+    @Override
+    public void onDetachedFromActivityForConfigChanges() {
+        for (EventChannel e : this.events.values()) {
+            e.setStreamHandler(null);
+        }
+        this.events = new HashMap<>();
+        Log.e("DETACHED", "onDetachedFromActivityForConfigChanges");
+    }
+
+    @Override
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        Log.e("REATTACHED", "REATTACHED");
+    }
+
+    @Override
+    public void onDetachedFromActivity() {
+        for (EventChannel e : this.events.values()) {
+            e.setStreamHandler(null);
+        }
+        this.events = new HashMap<>();
+        Log.e("DETACHED", "onDetachedFromActivity");
     }
 }

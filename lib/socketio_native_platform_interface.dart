@@ -26,16 +26,21 @@ abstract class SocketIoNativePlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
-  Future<void> setUri(String uri){
+
+  Future<void> setUri(String uri) {
     throw UnimplementedError('setUri() has not been implemented.');
   }
-  Future<void> setOption(String method,dynamic data){
+
+  Future<void> setOption(String method, dynamic data) {
     throw UnimplementedError('setOption() has not been implemented.');
   }
-  Future<void> callSocketIoMethod(String method){
+
+  Future<void> callSocketIoMethod(String method) {
     throw UnimplementedError('setOption() has not been implemented.');
   }
-  Future<dynamic> callSocketIoMethodWithCallback(String method, dynamic data, Map<String, dynamic> ? other) {
+
+  Future<dynamic> callSocketIoMethodWithCallback(
+      String method, dynamic data, Map<String, dynamic>? other) {
     throw UnimplementedError('setOption() has not been implemented.');
   }
 }
