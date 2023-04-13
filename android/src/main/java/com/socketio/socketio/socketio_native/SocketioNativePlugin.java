@@ -7,12 +7,19 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -83,54 +90,60 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
                 result.success(true);
                 break;
             case "Option[setSecure]":
-                boolean isSecure = (boolean) call.argument("data");
+                boolean isSecure = call.argument("data");
                 this.isSecure = isSecure;
                 options.setSecure(isSecure);
                 result.success(true);
                 break;
             case "Option[setReconnection]":
-                options.setReconnection((boolean) call.argument("data"));
+                options.setReconnection(call.argument("data"));
                 result.success(true);
                 break;
 
             case "Option[setReconnectionDelay]":
-                options.setReconnectionDelay((int) call.argument("data"));
+                options.setReconnectionDelay(((Number)call.argument("data")).longValue());
                 result.success(true);
                 break;
             case "Option[setReconnectionDelayMax]":
-                options.setReconnectionDelayMax((int) call.argument("data"));
+                options.setReconnectionDelayMax(((Number)call.argument("data")).longValue());
                 result.success(true);
                 break;
             case "Option[setReconnectionAttempts]":
-                options.setReconnectionAttempts((int) call.argument("data"));
+                options.setReconnectionAttempts(call.argument("data"));
                 result.success(true);
                 break;
             case "Option[setMultiplex]":
-                options.setMultiplex((boolean) call.argument("data"));
+                options.setMultiplex(call.argument("data"));
                 result.success(true);
                 break;
             case "Option[setUpgrade]":
-                options.setUpgrade((boolean) call.argument("data"));
+                options.setUpgrade(call.argument("data"));
                 result.success(true);
                 break;
             case "Option[setRememberUpgrade]":
-                options.setRememberUpgrade((boolean) call.argument("data"));
+                options.setRememberUpgrade(call.argument("data"));
                 result.success(true);
                 break;
             case "Option[setRandomizationFactor]":
-                options.setRandomizationFactor((double) call.argument("data"));
+                options.setRandomizationFactor(call.argument("data"));
                 result.success(true);
                 break;
             case "Option[setTimeout]":
-                options.setTimeout((int) call.argument("data"));
-                result.success(true);
+                try {
+                    options.setTimeout(((Number)call.argument("data")).longValue());
+                    result.success(true);
+                }
+                catch (NullPointerException e){
+                    result.success(false);
+                }
+
                 break;
             case "Option[disableAutoConnect]":
                 autoConnect = false;
                 result.success(true);
                 break;
             case "Option[setTransport]":
-                ArrayList<String> transports = (ArrayList<String>) call.argument("data");
+                ArrayList<String> transports = call.argument("data");
                 assert transports != null;
                 options.setTransports((String[]) transports.toArray(new String[0]));
                 result.success(true);
@@ -195,7 +208,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
             case "SocketIO[emitTimeout]":
                 String eventTimeout = call.argument("event");
                 @Nullable Object[] dataTimeOut = call.argument("data");
-                int timeout = (int) call.argument("timeout");
+                Long timeout =( (Number) call.argument("timeout")).longValue();
                 socketIo.emit(eventTimeout, dataTimeOut, new AckWithTimeout(timeout) {
                     @Override
                     public void onSuccess(Object... args) {
@@ -314,10 +327,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
                 if (socketIo != null) {
                     socketIo.on(channel, args -> {
                         Log.e(channel.toUpperCase(), Arrays.toString(args));
-                        HashMap<String,Object> hasMap = new HashMap<>();
-                        hasMap.put("id", socketIo.id());
-                        hasMap.put("connected", socketIo.connected());
-                        hasMap.put("active", socketIo.isActive());
+                        Map<String,Object> hasMap = new HashMap<>();
                         if (channel.equals("connect_error")) {
                             ArrayList<String> error = new ArrayList<>();
                             for(Object o : args){
@@ -326,9 +336,22 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
                             hasMap.put("data", error );
                         }
                         else if(!channel.equals("connect") && !channel.equals("disconnect")){
-                            hasMap.put("data", args[0]);
+                            if(args[0] instanceof JSONObject){
+                                String data = ((JSONObject) args[0]).toString();
+                                Gson gson = new Gson();
+                                gson.toJson(data);
+                                hasMap = gson.fromJson(data,new TypeToken<Map<String, Object>>(){});
+                            }else{
+                                hasMap.put("data", args[0]);
+                            }
+
+                        }else{
+                            hasMap.put("id", socketIo.id());
+                            hasMap.put("connected", socketIo.connected());
+                            hasMap.put("active", socketIo.isActive());
                         }
-                        Runnable runnable = () -> events.success(hasMap);
+                        Map<String, Object> finalHasMap = hasMap;
+                        Runnable runnable = () -> events.success(finalHasMap);
                         new Handler(Looper.getMainLooper()).post(runnable);
                     });
                 } else {
@@ -363,7 +386,7 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
                 if (socketIo != null) {
                     socketIo.once(channel, args -> {
                         Log.e(channel.toUpperCase(), Arrays.toString(args));
-                        HashMap<String, Object> hasMap = new HashMap<>();
+                        Map<String, Object> hasMap = new HashMap<>();
                         hasMap.put("id", socketIo.id());
                         hasMap.put("connected", socketIo.connected());
                         hasMap.put("active", socketIo.isActive());
@@ -371,9 +394,17 @@ public class SocketioNativePlugin implements FlutterPlugin, MethodCallHandler, A
                             hasMap.put("data", Arrays.toString(args));
                         }
                         else if(!channel.equals("connect") && !channel.equals("disconnect")){
-                            hasMap.put("data", args);
+                            if(args[0] instanceof JSONObject){
+                                String data = ((JSONObject) args[0]).toString();
+                                Gson gson = new Gson();
+                                gson.toJson(data);
+                                hasMap = gson.fromJson(data,new TypeToken<Map<String, Object>>(){});
+                            }else{
+                                hasMap.put("data", args[0]);
+                            }
                         }
-                        Runnable runnable = () -> events.success(hasMap);
+                        Map<String, Object> finalHasMap = hasMap;
+                        Runnable runnable = () -> events.success(finalHasMap);
                         new Handler(Looper.getMainLooper()).post(runnable);
                     });
                 } else {

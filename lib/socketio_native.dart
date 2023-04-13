@@ -47,11 +47,11 @@ class Option {
   }
 
   setReconnectionDelay(double delay) {
-    _options["Option[setReconnectionDelay]"] = delay;
+    _options["Option[setReconnectionDelay]"] = double.tryParse(delay.toString());
   }
 
   setReconnectionDelayMax(double delay) {
-    _options["Option[setReconnectionDelayMax]"] = delay;
+    _options["Option[setReconnectionDelayMax]"] = double.tryParse(delay.toString());
   }
 
   setReconnectionAttempts(int attempts) {
@@ -74,8 +74,8 @@ class Option {
     _options["Option[setRandomizationFactor]"] = factor;
   }
 
-  setTimeout(int timeout) {
-    _options["Option[setTimeout]"] = timeout;
+  setTimeout(double timeout) {
+    _options["Option[setTimeout]"] = double.tryParse(timeout.toString());
   }
 
   disableAutoConnect() {

@@ -1,6 +1,6 @@
 name: socketio_native
 description: Socket.io-client flutter plugin using native plateform (java for android).
-version: 0.0.2+2
+version: 0.0.3
 homepage: https://github.com/tsiresymila1/socket.io-client-native
 
 environment:

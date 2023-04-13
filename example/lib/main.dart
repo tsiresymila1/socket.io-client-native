@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
       option.setSecure(true);
       option.setTimeout(60000);
       option.setAuth({"api_key" : "4Mz8zGuOPFNOi95QMhjjZ85XsQIZzXBQ5VLJY6VDuS26"});
-      socketIO = await IO.create("https://realtimeio.sutchapp.com", option: option);
+      socketIO = await IO.create("http://192.168.88.6:3000", option: option);
       socketIO.onConnect((p0) {
         debugPrint("Connected>>>>");
         log.w({"CONNECTED": p0});
